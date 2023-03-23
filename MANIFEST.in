@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include milenio_pc *.css
+recursive-include milenio_pc *.csv
+recursive-include milenio_pc *.html
+recursive-include milenio_pc *.ico
+recursive-include milenio_pc *.js
+recursive-include milenio_pc *.json
+recursive-include milenio_pc *.md
+recursive-include milenio_pc *.png
+recursive-include milenio_pc *.py
+recursive-include milenio_pc *.svg
+recursive-include milenio_pc *.txt
+recursive-exclude milenio_pc *.pyc
