@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "creation": "2023-03-26 14:55:40.286435",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "status",
+  "status_date",
+  "finish_date",
+  "result_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nCompleted\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Status Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "finish_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Finish Date"
+  },
+  {
+   "fieldname": "result_message",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "Result Message"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-03-26 14:55:40.286435",
+ "modified_by": "Administrator",
+ "module": "Milenio Pc",
+ "name": "Milenio_Temp_File_Status",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

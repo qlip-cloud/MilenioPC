@@ -1,0 +1,160 @@
+{
+ "actions": [],
+ "creation": "2023-03-23 16:36:58.348457",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "temporal_lot",
+  "doc_type",
+  "doc_number",
+  "naming_series",
+  "item_num",
+  "item_quantity",
+  "unit_price",
+  "iva_tax",
+  "total",
+  "account",
+  "client_nit",
+  "client_name",
+  "doc_date",
+  "observation",
+  "item_code",
+  "item_desc",
+  "exp_date",
+  "doc_status",
+  "discount_percent",
+  "discount_value",
+  "seller_nit",
+  "company"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "temporal_lot",
+   "fieldtype": "Data",
+   "label": "Temporal Lot"
+  },
+  {
+   "fieldname": "doc_number",
+   "fieldtype": "Data",
+   "label": "Doc Number"
+  },
+  {
+   "fieldname": "item_num",
+   "fieldtype": "Data",
+   "label": "Item Num"
+  },
+  {
+   "fieldname": "item_quantity",
+   "fieldtype": "Data",
+   "label": "Item Quantity"
+  },
+  {
+   "fieldname": "unit_price",
+   "fieldtype": "Currency",
+   "label": "Unit Price"
+  },
+  {
+   "fieldname": "iva_tax",
+   "fieldtype": "Currency",
+   "label": "Iva Tax"
+  },
+  {
+   "fieldname": "total",
+   "fieldtype": "Currency",
+   "label": "Total"
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "client_nit",
+   "fieldtype": "Link",
+   "label": "Client Nit",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "client_name",
+   "fieldtype": "Data",
+   "label": "Client Name"
+  },
+  {
+   "fieldname": "doc_date",
+   "fieldtype": "Datetime",
+   "label": "Doc Date"
+  },
+  {
+   "fieldname": "observation",
+   "fieldtype": "Data",
+   "label": "Observation"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_desc",
+   "fieldtype": "Data",
+   "label": "Item Desc"
+  },
+  {
+   "fieldname": "exp_date",
+   "fieldtype": "Datetime",
+   "label": "Exp Date"
+  },
+  {
+   "fieldname": "doc_status",
+   "fieldtype": "Data",
+   "label": "Doc Status"
+  },
+  {
+   "fieldname": "discount_percent",
+   "fieldtype": "Data",
+   "label": "Discount Percent"
+  },
+  {
+   "fieldname": "discount_value",
+   "fieldtype": "Currency",
+   "label": "Discount Value"
+  },
+  {
+   "fieldname": "seller_nit",
+   "fieldtype": "Link",
+   "label": "Seller Nit",
+   "options": "Sales Person"
+  },
+  {
+   "fieldname": "doc_type",
+   "fieldtype": "Select",
+   "label": "Doc Type",
+   "options": "FV\nNC"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Data",
+   "label": "Naming Series"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-03-26 16:27:26.060664",
+ "modified_by": "Administrator",
+ "module": "Milenio Pc",
+ "name": "Milenio_Temporal_Data_File",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "creation": "2023-03-23 11:33:06.155713",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_file",
+  "company",
+  "status",
+  "import_list"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_file",
+   "fieldtype": "Attach",
+   "label": "Import File",
+   "read_only_depends_on": "eval:(doc.status=='Completed')",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "read_only_depends_on": "eval:(doc.status=='Completed')",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Starting\nActive\nCompleted\nFailed",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "import_list",
+   "fieldtype": "Table",
+   "label": "Import List",
+   "options": "Milenio_Temp_File_Status",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-03-26 14:57:10.600923",
+ "modified_by": "Administrator",
+ "module": "Milenio Pc",
+ "name": "Milenio_File_Upload",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
