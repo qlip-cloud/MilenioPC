@@ -9,9 +9,8 @@ frappe.ui.form.on('Milenio_File_Upload', {
 					doc: frm.doc,
 					method: "do_import_file",
 					callback: function(r) {
-						console.log("Do Import Completed");
 						if(!r.exc) {
-							if(r.message == True) {
+							if(r.message) {
 								frappe.msgprint(__("Completed"))
 							} else {
 								frappe.msgprint(__("Error! Please see error log"))

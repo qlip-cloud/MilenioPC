@@ -6,7 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "status",
-  "status_date",
+  "start_date",
   "finish_date",
   "result_message"
  ],
@@ -20,13 +20,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "status_date",
-   "fieldtype": "Datetime",
-   "in_list_view": 1,
-   "label": "Status Date",
-   "reqd": 1
-  },
-  {
    "fieldname": "finish_date",
    "fieldtype": "Datetime",
    "in_list_view": 1,
@@ -37,12 +30,19 @@
    "fieldtype": "Text",
    "in_list_view": 1,
    "label": "Result Message"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-03-26 14:55:40.286435",
+ "modified": "2023-03-29 08:40:32.520052",
  "modified_by": "Administrator",
  "module": "Milenio Pc",
  "name": "Milenio_Temp_File_Status",
