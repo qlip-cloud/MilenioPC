@@ -100,13 +100,15 @@ def new_invoice(doc, row, item, item_tax, customer, account):
 
 def new_item_invoice(doc, row, item, item_tax, customer, account):
 
+    qty = (int(row.item_quantity) * -1) if row.doc_type == 'NC' else int(row.item_quantity)
+    
     return {
                 "item_code":item.name,
                 "item_name":item.item_name,
                 "uom":item.stock_uom,
                 "description":item.item_name,
-                "qty":int(row.item_quantity),
-                "stock_qty":int(row.item_quantity),
+                "qty": qty,
+                "stock_qty":qty,
                 "stock_uom":item.stock_uom,
                 "income_account": account.name,
                 "item_tax_template":item_tax.name,
@@ -114,8 +116,8 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "base_rate":row.unit_price,
                 "net_rate":row.unit_price,
                 "base_net_rate":row.unit_price,
-                "amount": int(row.item_quantity) * row.unit_price,
-                "base_amount":int(row.item_quantity) * row.unit_price,
-                "net_amount": int(row.item_quantity) * row.unit_price,
-                "base_net_amount":int(row.item_quantity) * row.unit_price,
+                "amount": qty * row.unit_price,
+                "base_amount":qty * row.unit_price,
+                "net_amount": qty * row.unit_price,
+                "base_net_amount": qty * row.unit_price,
             }
