@@ -9,34 +9,33 @@ def sales_invoice_orchestrator(doc):
     data_temp_loaded_len = len(data_temp_loaded) - 1
 
     for index, row in enumerate(data_temp_loaded):
-
         try:
             doc_customer = frappe.get_doc("Customer", row.client_nit)
         except frappe.exceptions.DoesNotExistError as exc_cus:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun cliente no existe."
+            return True, f"Algun cliente no existe - {row.client_nit} - {exc_cus}"
 
         try:
             doc_item = frappe.get_doc("Item", row.item_code)
         except frappe.exceptions.DoesNotExistError as exc_item:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun producto no existe."
+            return True, f"Algun producto no existe - {row.item_code} - {exc_item}"
 
         try:
             doc_account = frappe.get_last_doc("Account", filters={"account_number":row.account, "company":doc.company})
         except frappe.exceptions.DoesNotExistError as exc_acco:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Cuenta de ingreso no existe."
+            return True, f"Cuenta de ingreso no existe - {row.account} - {exc_acco}"
 
         try:
             doc_item_tax = frappe.get_last_doc("Item Tax Template", filters={"title":row.iva_tax,"company":doc.company})
         except frappe.exceptions.DoesNotExistError as exc_iva:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Plantilla de impuesto no existe."
+            return True, f"Plantilla de impuesto no existe - {row.iva_tax} - {exc_iva}"
 
         try:
             
@@ -66,16 +65,16 @@ def sales_invoice_orchestrator(doc):
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun secuencial de factura se repite."
+            return True, f"Algun secuencial de factura se repite - {row.doc_number} - {sa_in_du}"
         except frappe.exceptions.UniqueValidationError as sa_in_uni:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun valor requerido se encuentra vacio."
+            return True, f"Algun valor requerido se encuentra vacio - {row.doc_number} - {sa_in_uni}"
         except Exception as sa_in_exc:
             print(sa_in_exc)
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Archivo con error."
+            return True, f"Archivo con error - {sa_in_exc}"
 
     frappe.db.commit()
     return False, None
@@ -101,7 +100,7 @@ def new_invoice(doc, row, item, item_tax, customer, account):
 def new_item_invoice(doc, row, item, item_tax, customer, account):
 
     qty = (int(row.item_quantity) * -1) if row.doc_type == 'NC' else int(row.item_quantity)
-    
+
     return {
                 "item_code":item.name,
                 "item_name":item.item_name,
