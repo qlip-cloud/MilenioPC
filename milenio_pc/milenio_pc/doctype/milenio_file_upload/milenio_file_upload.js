@@ -11,7 +11,7 @@ frappe.ui.form.on('Milenio_File_Upload', {
 					callback: function(r) {
 						if(!r.exc) {
 							if(r.message) {
-								frappe.msgprint(__("Completed"))
+								frappe.msgprint(__("El archivo esta en proceso de carga."))
 							} else {
 								frappe.msgprint(__("Error! Please see error log"))
 							}

@@ -11,28 +11,28 @@ def sales_invoice_orchestrator(doc):
     for index, row in enumerate(data_temp_loaded):
 
         try:
-            doc_customer = frappe.get_doc("Customer", row.client_nit)
+            doc_customer = frappe.get_doc("Customer", f"{row.client_nit}")
         except frappe.exceptions.DoesNotExistError as exc_cus:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
             return True, "Algun cliente no existe."
 
         try:
-            doc_item = frappe.get_doc("Item", row.item_code)
+            doc_item = frappe.get_doc("Item", f"{row.item_code}")
         except frappe.exceptions.DoesNotExistError as exc_item:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
             return True, "Algun producto no existe."
 
         try:
-            doc_account = frappe.get_last_doc("Account", filters={"account_number":row.account, "company":doc.company})
+            doc_account = frappe.get_last_doc("Account", filters={"account_number":f"{row.account}", "company":f"{doc.company}"})
         except frappe.exceptions.DoesNotExistError as exc_acco:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
             return True, "Cuenta de ingreso no existe."
 
         try:
-            doc_item_tax = frappe.get_last_doc("Item Tax Template", filters={"title":row.iva_tax,"company":doc.company})
+            doc_item_tax = frappe.get_last_doc("Item Tax Template", filters={"title":f"{row.iva_tax}","company":f"{doc.company}"})
         except frappe.exceptions.DoesNotExistError as exc_iva:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
@@ -101,7 +101,7 @@ def new_invoice(doc, row, item, item_tax, customer, account):
 def new_item_invoice(doc, row, item, item_tax, customer, account):
 
     qty = (int(row.item_quantity) * -1) if row.doc_type == 'NC' else int(row.item_quantity)
-    
+
     return {
                 "item_code":item.name,
                 "item_name":item.item_name,
