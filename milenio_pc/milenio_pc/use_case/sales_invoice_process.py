@@ -10,7 +10,7 @@ def sales_invoice_orchestrator(doc):
 
     for index, row in enumerate(data_temp_loaded):
         try:
-            doc_customer = frappe.get_doc("Customer", row.client_nit)
+            doc_customer = frappe.get_last_doc("Customer", filters={"tax_id":row.client_nit})
         except frappe.exceptions.DoesNotExistError as exc_cus:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
