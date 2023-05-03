@@ -119,4 +119,5 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "base_amount":qty * row.unit_price,
                 "net_amount": qty * row.unit_price,
                 "base_net_amount": qty * row.unit_price,
+                "taxes_and_charges": customer.sales_item_tax_template
             }
