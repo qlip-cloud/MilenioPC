@@ -63,10 +63,9 @@ def sales_invoice_orchestrator(doc):
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
-
+                sales_invoice_doc.insert(sales_invoice_doc)     
                 cal_taxes_and_totals(sales_invoice_doc)
 
-                sales_invoice_doc.insert(sales_invoice_doc)         
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
@@ -77,7 +76,6 @@ def sales_invoice_orchestrator(doc):
             frappe.db.rollback()
             return True, f"Algun valor requerido se encuentra vacio - {row.doc_number} - {sa_in_uni}"
         except Exception as sa_in_exc:
-            print(sa_in_exc)
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
             return True, f"Archivo con error - {sa_in_exc}"
@@ -161,6 +159,8 @@ def cal_taxes_and_totals(doc):
             doc.append('taxes', tax)
 
         doc.calculate_taxes_and_totals()
+        
+    doc.save()
 
     def add_taxes_from_item_tax_template(child_item, parent_doc):
 
