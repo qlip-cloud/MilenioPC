@@ -130,7 +130,6 @@ def cal_taxes_and_totals(doc):
     item_codes = []
     item_rates = {}
 
-    
     for item in doc.items:
         if item.item_code:
             item_codes.append([item.item_code, item.name])
@@ -142,7 +141,7 @@ def cal_taxes_and_totals(doc):
         print(f"item_rates: {item_rates}")
 
         res_out = get_item_tax_info(doc.company, doc.tax_category, item_codes, item_rates)
-
+        
         print(f"res_out: {res_out}")
 
         for item in doc.items:
@@ -154,7 +153,14 @@ def cal_taxes_and_totals(doc):
             else:
                 item.item_tax_rate = ""
 
-   
+    if doc.taxes_and_charges:
+
+        taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
+
+        for tax in taxes:
+            doc.append('taxes', tax)
+
+        doc.calculate_taxes_and_totals()
         
     doc.insert()
 
