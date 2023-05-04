@@ -63,6 +63,7 @@ def sales_invoice_orchestrator(doc):
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
+                sales_invoice_doc.insert()
                 cal_taxes_and_totals(sales_invoice_doc)
 
 
