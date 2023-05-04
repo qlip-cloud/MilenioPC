@@ -146,7 +146,7 @@ def cal_taxes_and_totals(doc):
                 item.item_tax_template = res_out[item.name].item_tax_template
                 item.item_tax_rate = res_out[item.name].item_tax_rate
                 add_taxes_from_item_tax_template(item, doc)
-            else:.
+            else:
                 item.item_tax_template = ""
                 item.item_tax_rate = ""
 
@@ -156,7 +156,7 @@ def cal_taxes_and_totals(doc):
 
         for tax in taxes:
             doc.append('taxes', tax)
-
+            
         doc.calculate_taxes_and_totals()
         
     doc.insert()
