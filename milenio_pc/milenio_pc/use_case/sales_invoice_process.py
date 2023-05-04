@@ -64,7 +64,9 @@ def sales_invoice_orchestrator(doc):
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
                 sales_invoice_doc.insert()
-                cal_taxes_and_totals(sales_invoice_doc)
+
+                sales_invoice_doc_saved = frappe.get_doc("Sales Invoice", sales_invoice_doc.name)
+                cal_taxes_and_totals(sales_invoice_doc_saved)
 
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
