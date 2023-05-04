@@ -48,15 +48,6 @@ class Milenio_File_Upload(Document):
 
 		if self.status == 'Active':
 			frappe.throw(_("Job already running to upload."))
-
-		# validar procesos simultáneos
-		simultaneous_process = frappe.db.sql("""
-				Select count(*)
-				from tabMilenio_File_Upload
-				WHERE status = 'Active'""")[0][0] or 0
-
-		if simultaneous_process != 0:
-			frappe.throw(_("Other job of File Import already running."))
 		
 		self.status = 'Active'
 		self.save(ignore_permissions=True)

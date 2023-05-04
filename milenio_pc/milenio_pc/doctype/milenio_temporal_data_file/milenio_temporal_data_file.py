@@ -9,7 +9,6 @@ NAME = "Sales Invoice-naming_series-options"
 PROPERTY_SETTER = "Property Setter"
 
 class Milenio_Temporal_Data_File(Document):
-	
 	def validate(self):
 
 		if self.naming_serie:
@@ -24,5 +23,3 @@ class Milenio_Temporal_Data_File(Document):
 				options.index(self.naming_serie)
 			except ValueError:
 				frappe.throw(_("Naming Series is not valid"))
-
-

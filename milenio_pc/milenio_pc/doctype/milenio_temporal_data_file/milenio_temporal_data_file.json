@@ -1,6 +1,7 @@
 {
  "actions": [],
- "creation": "2023-03-23 16:36:58.348457",
+ "autoname": "naming_series:",
+ "creation": "2023-03-27 08:17:01.093689",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -31,18 +32,19 @@
  "fields": [
   {
    "fieldname": "company",
-   "fieldtype": "Link",
-   "label": "Company",
-   "options": "Company"
+   "fieldtype": "Data",
+   "label": "Company"
   },
   {
    "fieldname": "temporal_lot",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Temporal Lot"
   },
   {
    "fieldname": "doc_number",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Doc Number"
   },
   {
@@ -57,30 +59,28 @@
   },
   {
    "fieldname": "unit_price",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Unit Price"
   },
   {
    "fieldname": "iva_tax",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Iva Tax"
   },
   {
    "fieldname": "total",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Total"
   },
   {
    "fieldname": "account",
-   "fieldtype": "Link",
-   "label": "Account",
-   "options": "Account"
+   "fieldtype": "Data",
+   "label": "Account"
   },
   {
    "fieldname": "client_nit",
-   "fieldtype": "Link",
-   "label": "Client Nit",
-   "options": "Customer"
+   "fieldtype": "Data",
+   "label": "Client Nit"
   },
   {
    "fieldname": "client_name",
@@ -89,7 +89,7 @@
   },
   {
    "fieldname": "doc_date",
-   "fieldtype": "Datetime",
+   "fieldtype": "Data",
    "label": "Doc Date"
   },
   {
@@ -99,9 +99,8 @@
   },
   {
    "fieldname": "item_code",
-   "fieldtype": "Link",
-   "label": "Item Code",
-   "options": "Item"
+   "fieldtype": "Data",
+   "label": "Item Code"
   },
   {
    "fieldname": "item_desc",
@@ -110,7 +109,7 @@
   },
   {
    "fieldname": "exp_date",
-   "fieldtype": "Datetime",
+   "fieldtype": "Data",
    "label": "Exp Date"
   },
   {
@@ -125,20 +124,18 @@
   },
   {
    "fieldname": "discount_value",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Discount Value"
   },
   {
    "fieldname": "seller_nit",
-   "fieldtype": "Link",
-   "label": "Seller Nit",
-   "options": "Sales Person"
+   "fieldtype": "Data",
+   "label": "Seller Nit"
   },
   {
    "fieldname": "doc_type",
-   "fieldtype": "Select",
-   "label": "Doc Type",
-   "options": "FV\nNC"
+   "fieldtype": "Data",
+   "label": "Doc Type"
   },
   {
    "fieldname": "naming_series",
@@ -148,12 +145,25 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-03-26 16:27:26.060664",
+ "modified": "2023-04-17 11:28:52.376161",
  "modified_by": "Administrator",
  "module": "Milenio Pc",
  "name": "Milenio_Temporal_Data_File",
  "owner": "Administrator",
- "permissions": [],
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1

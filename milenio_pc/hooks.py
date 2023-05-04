@@ -35,7 +35,9 @@ app_license = "MIT"
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-doctype_js = {"Company" : "public/js/doctype_forms/company.js"}
+doctype_js = {
+	"Company" : "public/js/forms/company.js",
+	"Sales Invoice" : "public/js/forms/salesInvoice.js"}
 
 # Home Pages
 # ----------
@@ -82,9 +84,9 @@ doctype_js = {"Company" : "public/js/doctype_forms/company.js"}
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Sales Invoice": "milenio_pc.milenio_pc.overrides.sales_invoice.CustomSalesInvoice"
+}
 
 # Document Events
 # ---------------
