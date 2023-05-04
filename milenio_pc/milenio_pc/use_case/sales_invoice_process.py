@@ -1,6 +1,9 @@
+import frappe
 from datetime import datetime
 from frappe.utils import add_to_date, getdate, now
-import frappe
+from erpnext.stock.get_item_details import get_item_tax_info
+from erpnext.controllers.accounts_controller import get_taxes_and_charges
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_details
 
 def sales_invoice_orchestrator(doc):
 
@@ -58,8 +61,11 @@ def sales_invoice_orchestrator(doc):
                 doctype_data["items"].append(new_item_invoice(**kwargs))
 
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
-                print(doctype_data)
+                
                 sales_invoice_doc = frappe.get_doc(doctype_data)
+
+                cal_taxes_and_totals(sales_invoice_doc)
+
                 sales_invoice_doc.insert(sales_invoice_doc)         
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
@@ -121,3 +127,58 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "base_net_amount": qty * row.unit_price,
                 "taxes_and_charges": customer.sales_item_tax_template
             }
+
+def cal_taxes_and_totals(doc):
+
+    item_codes = []
+    item_rates = {}
+
+    for item in doc.items:
+
+        if item.item_code:
+            item_codes.append([item.item_code, item.name])
+            item_rates[item.name] = item.net_rate
+
+        if len(item_codes):
+
+            res_out = get_item_tax_info(doc.company, doc.tax_category, item_codes, item_rates)
+
+            for item in doc.items:
+
+                if item.name:
+                    item.item_tax_template = res_out[item.name].item_tax_template
+                    item.item_tax_rate = res_out[item.name].item_tax_rate
+                    add_taxes_from_item_tax_template(item, doc)
+                else:
+                    item.item_tax_template = ""
+                    item.item_tax_rate = ""
+
+    if doc.taxes_and_charges:
+
+        taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
+
+        for tax in taxes:
+            doc.append('taxes', tax)
+
+        doc.calculate_taxes_and_totals()
+
+    def add_taxes_from_item_tax_template(child_item, parent_doc):
+
+        add_taxes_from_item_tax_template = frappe.db.get_single_value("Accounts Settings", "add_taxes_from_item_tax_template")
+
+        if child_item.item_tax_rate and add_taxes_from_item_tax_template:
+            tax_map = json.loads(child_item.item_tax_rate)
+            for tax_type in tax_map:
+                tax_rate = flt(tax_map[tax_type])
+                taxes = parent_doc.taxes or []
+                # add new row for tax head only if missing
+                found = any(tax.account_head == tax_type for tax in taxes)
+                if not found:
+                    tax_row = parent_doc.append("taxes", {})
+                    tax_row.update({
+                        "description" : str(tax_type).split(' - ')[0],
+                        "charge_type" : "On Net Total",
+                        "account_head" : tax_type,
+                        "rate" : 0
+                    })
+                    tax_row.db_insert()
