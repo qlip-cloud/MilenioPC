@@ -136,19 +136,19 @@ def cal_taxes_and_totals(doc):
             item_codes.append([item.item_code, item.name])
             item_rates[item.name] = item.net_rate
 
-        if len(item_codes):
+    if len(item_codes):
 
-            res_out = get_item_tax_info(doc.company, doc.tax_category, item_codes, item_rates)
+        res_out = get_item_tax_info(doc.company, doc.tax_category, item_codes, item_rates)
 
-            for item in doc.items:
+        for item in doc.items:
 
-                if item.name:
-                    item.item_tax_template = res_out[item.name].item_tax_template
-                    item.item_tax_rate = res_out[item.name].item_tax_rate
-                    add_taxes_from_item_tax_template(item, doc)
-                else:
-                    item.item_tax_template = ""
-                    item.item_tax_rate = ""
+            if item.name:
+                item.item_tax_template = res_out[item.name].item_tax_template
+                item.item_tax_rate = res_out[item.name].item_tax_rate
+                add_taxes_from_item_tax_template(item, doc)
+            else:.
+                item.item_tax_template = ""
+                item.item_tax_rate = ""
 
     if doc.taxes_and_charges:
 
