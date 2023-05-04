@@ -128,7 +128,7 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
 
 def cal_taxes_and_totals(doc_name):
 
-    doc = frappe.get_doc("Sales Order", doc_name)
+    doc = frappe.get_doc("Sales Invoice", doc_name)
 
     item_codes = []
     item_rates = {}
