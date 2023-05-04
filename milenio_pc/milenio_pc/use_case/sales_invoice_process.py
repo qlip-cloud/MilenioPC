@@ -63,8 +63,7 @@ def sales_invoice_orchestrator(doc):
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
-                sales_invoice_doc.insert()
-                #cal_taxes_and_totals(sales_invoice_doc)
+                cal_taxes_and_totals(sales_invoice_doc)
 
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
@@ -160,7 +159,7 @@ def cal_taxes_and_totals(doc):
 
         doc.calculate_taxes_and_totals()
         
-    doc.save()
+    doc.insert()
 
     def add_taxes_from_item_tax_template(child_item, parent_doc):
 
