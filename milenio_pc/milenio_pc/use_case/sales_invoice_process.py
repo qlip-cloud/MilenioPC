@@ -98,7 +98,8 @@ def new_invoice(doc, row, item, item_tax, customer, account):
             'posting_date': getdate(row.doc_date),
             'due_date':add_to_date(datetime.now(), days=int(row.exp_date), as_string=True),
             'items':[],
-            "status":"Draft"
+            "status":"Draft",
+            "taxes_and_charges": customer.sales_item_tax_template
         }
 
 def new_item_invoice(doc, row, item, item_tax, customer, account):
@@ -120,10 +121,9 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "net_rate":row.unit_price,
                 "base_net_rate":row.unit_price,
                 "amount": qty * row.unit_price,
-                "base_amount":qty * row.unit_price,
+                "base_amount": qty * row.unit_price,
                 "net_amount": qty * row.unit_price,
-                "base_net_amount": qty * row.unit_price,
-                "taxes_and_charges": customer.sales_item_tax_template
+                "base_net_amount": qty * row.unit_price
             }
 
 def cal_taxes_and_totals(doc):
