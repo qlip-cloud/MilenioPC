@@ -116,14 +116,8 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "stock_uom":item.stock_uom,
                 "income_account": account.name,
                 "item_tax_template":item_tax.name,
-                "rate":item.unit_price,
-                "base_rate":row.unit_price,
-                "net_rate":row.unit_price,
-                "base_net_rate":row.unit_price,
                 "amount": qty * row.unit_price,
-                "base_amount": qty * row.unit_price,
-                "net_amount": qty * row.unit_price,
-                "base_net_amount": qty * row.unit_price
+                "unit_price": row.unit_price
             }
 
 def cal_taxes_and_totals(doc):
@@ -138,5 +132,5 @@ def cal_taxes_and_totals(doc):
         doc.calculate_taxes_and_totals()
 
     doc.insert()
-    
+
     update_child_qty_rate("Sales Invoice", doc.items, doc.name)
