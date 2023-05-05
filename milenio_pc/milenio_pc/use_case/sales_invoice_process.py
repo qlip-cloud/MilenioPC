@@ -4,6 +4,7 @@ from frappe.utils import add_to_date, getdate, now
 from erpnext.stock.get_item_details import get_item_tax_info
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_details
+from erpnext.controllers.accounts_controller import update_child_qty_rate
 
 def sales_invoice_orchestrator(doc):
 
@@ -64,7 +65,6 @@ def sales_invoice_orchestrator(doc):
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
                 cal_taxes_and_totals(sales_invoice_doc)
-                sales_invoice_doc.insert()
 
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
@@ -116,7 +116,7 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "stock_uom":item.stock_uom,
                 "income_account": account.name,
                 "item_tax_template":item_tax.name,
-                "rate":row.unit_price,
+                "rate":item.unit_price,
                 "base_rate":row.unit_price,
                 "net_rate":row.unit_price,
                 "base_net_rate":row.unit_price,
@@ -128,10 +128,6 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
 
 def cal_taxes_and_totals(doc):
 
-    for item in doc.items:
-        item.item_tax_template = item.item_tax_template
-        add_taxes_from_item_tax_template(item, doc)
-
     if doc.taxes_and_charges:
 
         taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
@@ -141,23 +137,6 @@ def cal_taxes_and_totals(doc):
 
         doc.calculate_taxes_and_totals()
 
-def add_taxes_from_item_tax_template(child_item, parent_doc):
-
-    add_taxes_from_item_tax_template = frappe.db.get_single_value("Accounts Settings", "add_taxes_from_item_tax_template")
-
-    if child_item.item_tax_rate and add_taxes_from_item_tax_template:
-        tax_map = json.loads(child_item.item_tax_rate)
-        for tax_type in tax_map:
-            tax_rate = flt(tax_map[tax_type])
-            taxes = parent_doc.taxes or []
-            # add new row for tax head only if missing
-            found = any(tax.account_head == tax_type for tax in taxes)
-            if not found:
-                tax_row = parent_doc.append("taxes", {})
-                tax_row.update({
-                    "description" : str(tax_type).split(' - ')[0],
-                    "charge_type" : "On Net Total",
-                    "account_head" : tax_type,
-                    "rate" : 0
-                })
-                tax_row.db_insert()
+    doc.insert()
+    
+    update_child_qty_rate("Sales Invoice", doc.items, doc.name)
