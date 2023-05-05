@@ -127,30 +127,10 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
             }
 
 def cal_taxes_and_totals(doc):
-    
-    item_codes = []
-    item_rates = {}
 
     for item in doc.items:
-
-        if item.item_code:
-            item_codes.append([item.item_code, item.name])
-            item_rates[item.name] = item.net_rate
-
-    if len(item_codes):
-
-        res_out = get_item_tax_info(doc.company, doc.tax_category, item_codes, item_rates)
-
-        for item in doc.items:
-
-            if item.name:
-                item.item_tax_template = res_out[item.name].get('item_tax_template')
-                item.item_tax_rate = res_out[item.name].get('item_tax_rate')
-                # add_taxes_from_item_tax_template(item.item_tax_rate) # Se ejecuta el método que sigue
-                add_taxes_from_item_tax_template(item, doc)
-            else:
-                item.item_tax_template = ""
-                item.item_tax_rate = ""
+        item.item_tax_template = item.item_tax_template
+        add_taxes_from_item_tax_template(item, doc)
 
     if doc.taxes_and_charges:
 
