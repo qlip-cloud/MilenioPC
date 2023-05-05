@@ -127,8 +127,8 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "net_amount": qty * row.unit_price,
                 "base_net_amount": qty * row.unit_price,
                 "item_tax_amount":0.0,
-                "total_weight":item.weight_per_unit * qty
-
+                "total_weight":item.weight_per_unit * qty,
+                "unit_price": row.unit_price
             }
 
 def cal_taxes_and_totals(doc):
