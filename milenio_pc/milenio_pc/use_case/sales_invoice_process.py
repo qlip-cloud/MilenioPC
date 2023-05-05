@@ -63,8 +63,8 @@ def sales_invoice_orchestrator(doc):
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
+                cal_taxes_and_totals(sales_invoice_doc)
                 sales_invoice_doc.insert()
-                cal_taxes_and_totals(sales_invoice_doc.name)
 
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
@@ -126,35 +126,11 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "taxes_and_charges": customer.sales_item_tax_template
             }
 
-def cal_taxes_and_totals(doc_name):
-
-    doc = frappe.get_doc("Sales Invoice", doc_name)
-
-    item_codes = []
-    item_rates = {}
+def cal_taxes_and_totals(doc):
 
     for item in doc.items:
-        if item.item_code:
-            item_codes.append([item.item_code, item.name])
-            item_rates[item.name] = item.net_rate
-
-    if len(item_codes):
-
-        print(f"item_codes: {item_codes}")
-        print(f"item_rates: {item_rates}")
-
-        res_out = get_item_tax_info(doc.company, doc.tax_category, item_codes, item_rates)
-        
-        print(f"res_out: {res_out}")
-
-        for item in doc.items:
-
-            if item.name:
-                item.item_tax_template = res_out[item.name].item_tax_template
-                item.item_tax_rate = res_out[item.name].item_tax_rate
-                add_taxes_from_item_tax_template(item, doc)
-            else:
-                item.item_tax_rate = ""
+        item.item_tax_template = item.item_tax_template
+        add_taxes_from_item_tax_template(item, doc)
 
     if doc.taxes_and_charges:
 
@@ -165,8 +141,6 @@ def cal_taxes_and_totals(doc_name):
 
         doc.calculate_taxes_and_totals()
         
-    doc.insert()
-
     def add_taxes_from_item_tax_template(child_item, parent_doc):
 
         add_taxes_from_item_tax_template = frappe.db.get_single_value("Accounts Settings", "add_taxes_from_item_tax_template")
