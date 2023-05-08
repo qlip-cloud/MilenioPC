@@ -4,7 +4,7 @@ from frappe.utils import add_to_date, getdate, now
 from erpnext.stock.get_item_details import get_item_tax_info
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_details
-from erpnext.regional.india.e_invoice.utils import make_einvoice
+from erpnext.regional.india.e_invoice.utils import make_einvoice, validate_totals
 
 def sales_invoice_orchestrator(doc):
 
@@ -64,9 +64,10 @@ def sales_invoice_orchestrator(doc):
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
-                sales_invoice_doc = make_einvoice(sales_invoice_doc)
-                cal_taxes_and_totals(sales_invoice_doc)
                 sales_invoice_doc.insert()
+                sales_invoice_doc = make_einvoice(sales_invoice_doc)
+                validate_totals(sales_invoice_doc)
+                #cal_taxes_and_totals(sales_invoice_doc)
 
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
