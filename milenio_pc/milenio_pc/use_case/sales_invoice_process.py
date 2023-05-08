@@ -124,8 +124,7 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "amount": qty * row.unit_price,
                 "base_amount": qty * row.unit_price,
                 "net_amount": qty * row.unit_price,
-                "base_net_amount": qty * row.unit_price,
-                "unit_price": row.unit_price
+                "base_net_amount": qty * row.unit_price
             }
 
 def cal_taxes_and_totals(doc):
