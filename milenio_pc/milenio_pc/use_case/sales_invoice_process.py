@@ -4,7 +4,7 @@ from frappe.utils import add_to_date, getdate, now
 from erpnext.stock.get_item_details import get_item_tax_info
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_details
-#from erpnext.regional.india.e_invoice.utils import make_einvoice
+from erpnext.regional.india.e_invoice.utils import make_einvoice
 
 def sales_invoice_orchestrator(doc):
 
@@ -64,7 +64,7 @@ def sales_invoice_orchestrator(doc):
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
-                #sales_invoice_doc = make_einvoice(sales_invoice_doc)
+                sales_invoice_doc = make_einvoice(sales_invoice_doc)
                 cal_taxes_and_totals(sales_invoice_doc)
                 sales_invoice_doc.insert()
 
@@ -118,7 +118,7 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "stock_uom":item.stock_uom,
                 "income_account": account.name,
                 "item_tax_template":item_tax.name,
-                "rate":item.unit_price,
+                "rate":row.unit_price,
                 "base_rate":row.unit_price,
                 "net_rate":row.unit_price,
                 "base_net_rate":row.unit_price,
@@ -126,7 +126,7 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "base_amount": qty * row.unit_price,
                 "net_amount": qty * row.unit_price,
                 "base_net_amount": qty * row.unit_price,
-                #"unit_price": row.unit_price
+                "unit_price": row.unit_price
             }
 
 def cal_taxes_and_totals(doc):
