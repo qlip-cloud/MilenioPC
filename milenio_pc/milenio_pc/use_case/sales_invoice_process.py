@@ -129,7 +129,8 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "base_amount": qty * row.unit_price,
                 "net_amount": qty * row.unit_price,
                 "base_net_amount": qty * row.unit_price,
-                "unit_price": row.unit_price
+                "unit_price": row.unit_price,
+                "taxes":[]
             }
 
 def cal_taxes_and_totals(doc):
@@ -145,7 +146,7 @@ def cal_taxes_and_totals(doc):
         for tax in taxes:
             doc.append('taxes', tax)
 
-        doc.calculate_taxes_and_totals()
+    doc.calculate_taxes_and_totals()
 
 def add_taxes_from_item_tax_template(child_item, parent_doc):
 
@@ -159,11 +160,10 @@ def add_taxes_from_item_tax_template(child_item, parent_doc):
             # add new row for tax head only if missing
             found = any(tax.account_head == tax_type for tax in taxes)
             if not found:
-                tax_row = parent_doc.append("taxes", {})
-                tax_row.update({
+
+                parent_doc.append("taxes", {
                     "description" : str(tax_type).split(' - ')[0],
                     "charge_type" : "On Net Total",
                     "account_head" : tax_type,
                     "rate" : 0
                 })
-                tax_row.db_insert()
