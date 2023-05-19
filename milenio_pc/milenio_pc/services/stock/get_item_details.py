@@ -24,7 +24,7 @@ def get_item_tax_info(company, tax_category, item_codes, item_rates=None, item_t
 
 		args = {"company": company, "tax_category": tax_category, "net_rate": item_rates[item_code[1]]}
 		
-		if item_tax_templates:
+		if item_tax_templates and item_code[0] in item_tax_templates:
 			out[item_code[1]]["item_tax_rate"] = get_item_tax_map(company, item_tax_templates[item_code[0]], as_json=True)
 			out[item_code[1]]["item_tax_template"] = item_tax_templates[item_code[0]]
 		else:
