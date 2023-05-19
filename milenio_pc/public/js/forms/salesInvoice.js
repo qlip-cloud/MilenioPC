@@ -4,7 +4,7 @@
 frappe.ui.form.on('Sales Invoice', {
 	refresh: function(frm) {
 		if (!frm.is_new()) {
-			frm.toggle_enable(['sequence'], True);
+			frm.toggle_enable(['sequence'], true);
 		}
 	}
 });
