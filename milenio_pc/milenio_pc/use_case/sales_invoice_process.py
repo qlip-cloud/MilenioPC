@@ -144,7 +144,8 @@ def cal_taxes_and_totals(doc):
         taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
 
         for tax in taxes:
-            doc.append('taxes', tax)
+            if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
+                doc.append('taxes', tax)
 
     doc.calculate_taxes_and_totals()
 
