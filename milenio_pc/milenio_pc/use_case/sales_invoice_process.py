@@ -83,7 +83,7 @@ def sales_invoice_orchestrator(doc):
         except Exception as sa_in_exc:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, f"Archivo con error - {sa_in_exc}"
+            return True, f"Archivo con error - {row.doc_number} - {sa_in_exc}"
 
     frappe.db.commit()
     return False, None
