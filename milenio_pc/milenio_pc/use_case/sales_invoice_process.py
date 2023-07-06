@@ -75,7 +75,7 @@ def sales_invoice_orchestrator(doc):
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, f"Algun secuencial de factura se repite - {row.doc_number} - {sa_in_du}"
+            return True, f"Algun secuencial de factura se repite - {row.naming_series}{row.doc_number} - {sa_in_du}"
         except frappe.exceptions.UniqueValidationError as sa_in_uni:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
