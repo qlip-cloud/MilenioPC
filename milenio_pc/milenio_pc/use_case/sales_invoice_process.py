@@ -79,11 +79,11 @@ def sales_invoice_orchestrator(doc):
         except frappe.exceptions.UniqueValidationError as sa_in_uni:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, f"Algun valor requerido se encuentra vacio - {row.doc_number} - {sa_in_uni}"
+            return True, f"Algun valor requerido se encuentra vacio - {row.naming_series}{row.doc_number} - {sa_in_uni}"
         except Exception as sa_in_exc:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, f"Archivo con error - {row.doc_number} - {sa_in_exc}"
+            return True, f"Archivo con error - {row.naming_series}{row.doc_number} - {sa_in_exc}"
 
     frappe.db.commit()
     return False, None
@@ -100,7 +100,8 @@ def new_invoice(doc, row, item, item_tax, customer, account):
             'naming_series':row.naming_series,
             'customer_name':customer.customer_name,
             'tax_id':customer.tax_id,
-            'posting_date': getdate(row.doc_date),
+            'posting_date': row.doc_date.split(' ')[0],
+            'posting_time': row.doc_date.split(' ')[1]
             'due_date':add_to_date(datetime.now(), days=int(row.exp_date), as_string=True),
             'items':[],
             "status":"Draft",
