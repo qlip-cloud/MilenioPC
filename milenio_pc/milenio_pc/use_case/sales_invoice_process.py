@@ -10,6 +10,8 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_d
 
 def sales_invoice_orchestrator(doc):
 
+    frappe.flags.in_import = 1
+
     data_temp_loaded = frappe.db.sql(f'SELECT * FROM tabMilenio_Temporal_Data_File WHERE temporal_lot = "{doc.name}" ORDER BY doc_number ASC', as_dict=1)
     doctype_data = None
     data_temp_loaded_len = len(data_temp_loaded) - 1
