@@ -2,7 +2,7 @@ import json
 import frappe
 from frappe.utils import flt
 from datetime import datetime
-from frappe.utils import add_to_date, getdate, now
+from frappe.utils import add_to_date, getdate, now, get_time
 from erpnext.stock.get_item_details import get_item_tax_info
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_details
@@ -109,8 +109,8 @@ def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_l
             'naming_series':row.naming_series,
             'customer_name':customer.customer_name,
             'tax_id':customer.tax_id,
-            'posting_date': row.doc_date.split(' ')[0],
-            'posting_time': row.doc_date.split(' ')[1],
+            'posting_date': getdate(row.doc_date),
+            'posting_time': get_time(row.doc_date),
             'due_date':add_to_date(datetime.now(), days=int(row.exp_date), as_string=True),
             'items':[],
             "status":"Draft",
