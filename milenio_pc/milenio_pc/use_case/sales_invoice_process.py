@@ -10,8 +10,6 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_d
 
 def sales_invoice_orchestrator(doc):
 
-    #frappe.flags.in_import = True
-
     data_temp_loaded = frappe.db.sql(f'SELECT * FROM tabMilenio_Temporal_Data_File WHERE temporal_lot = "{doc.name}" ORDER BY doc_number ASC', as_dict=1)
     doctype_data = None
     data_temp_loaded_len = len(data_temp_loaded) - 1
@@ -67,13 +65,16 @@ def sales_invoice_orchestrator(doc):
 
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
                 
-                print(doctype_data)
+                frappe.flags.in_import = True
                 
                 sales_invoice_doc = frappe.get_doc(doctype_data)
                 #sales_invoice_doc = make_einvoice(sales_invoice_doc)
                 sales_invoice_doc.set_missing_values(True)
                 cal_taxes_and_totals(sales_invoice_doc)
                 sales_invoice_doc.insert()
+
+                frappe.flags.in_import = False
+               
 
 
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
