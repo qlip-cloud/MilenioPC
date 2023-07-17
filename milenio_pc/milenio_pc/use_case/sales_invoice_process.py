@@ -14,6 +14,8 @@ def sales_invoice_orchestrator(doc):
     doctype_data = None
     data_temp_loaded_len = len(data_temp_loaded) - 1
 
+    price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
+
     for index, row in enumerate(data_temp_loaded):
         try:
             doc_customer = frappe.get_last_doc("Customer", filters={"tax_id":row.client_nit})
@@ -51,7 +53,9 @@ def sales_invoice_orchestrator(doc):
                 "item":doc_item,
                 "item_tax":doc_item_tax,
                 "customer":doc_customer,
-                "account":doc_account
+                "account":doc_account,
+                "price_list":price_list,
+                "price_list_currency":price_list_currency
             }
 
             if index == 0:
@@ -93,7 +97,7 @@ def sales_invoice_orchestrator(doc):
     frappe.db.commit()
     return False, None
 
-def new_invoice(doc, row, item, item_tax, customer, account):
+def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency):
 
     return {
             'doctype': 'Sales Invoice',
@@ -111,10 +115,13 @@ def new_invoice(doc, row, item, item_tax, customer, account):
             'items':[],
             "status":"Draft",
             "taxes_and_charges": customer.sales_item_tax_template,
-            "taxes":[]
+            "taxes":[],
+            'selling_price_list': price_list,
+            'price_list_currency': price_list_currency,
+            'plc_conversion_rate': 1.0,
         }
 
-def new_item_invoice(doc, row, item, item_tax, customer, account):
+def new_item_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency):
 
     qty = (int(row.item_quantity) * -1) if row.doc_type == 'NC' else int(row.item_quantity)
 
