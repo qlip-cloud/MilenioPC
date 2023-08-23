@@ -148,36 +148,64 @@ def new_item_invoice(doc, row, item, item_tax, customer, account, price_list, pr
 
 def cal_taxes_and_totals(doc):
 
+    cruzar_impuestos = 0
+
+    try:
+        cruzar_impuestos = frappe.db.get_single_value('Dynamic Taxes Config', "cruzar_impuestos")
+    except Exception as e:
+        pass
+
     for item in doc.items:
         item.item_tax_template = item.item_tax_template
-        add_taxes_from_item_tax_template(item, doc)
+        add_taxes_from_item_tax_template(item, doc, cruzar_impuestos)
 
     if doc.taxes_and_charges:
 
         taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
 
         for tax in taxes:
-            if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
-                doc.append('taxes', tax)
+
+            if cruzar_impuestos:
+                if not any((item_tax.get("account_head") == tax.get("account_head") and item_tax.get("rate") == tax.get("rate")) for item_tax in doc.taxes):
+                    for item in doc.items:
+                        if frappe.db.exists("Item Tax Template Detail", {"parent":item.item_tax_template, "tax_type":tax.get("account_head"), "tax_rate":tax.get("rate")}):
+                            doc.append('taxes', tax)
+            else:
+                if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
+                    doc.append('taxes', tax)
 
     doc.calculate_taxes_and_totals()
 
-def add_taxes_from_item_tax_template(child_item, parent_doc):
+def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
+    
 
     add_taxes_from_item_tax_template = frappe.db.get_single_value("Accounts Settings", "add_taxes_from_item_tax_template")
 
     if child_item.item_tax_rate and add_taxes_from_item_tax_template:
+
         tax_map = json.loads(child_item.item_tax_rate)
+        
         for tax_type in tax_map:
             tax_rate = flt(tax_map[tax_type])
             taxes = parent_doc.taxes or []
             # add new row for tax head only if missing
-            found = any(tax.account_head == tax_type for tax in taxes)
+            if cruzar_impuestos:
+
+                found = any((tax.account_head == tax_type and tax.rate == tax_rate) for tax in taxes)
+
+                exist = frappe.db.exists("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate})
+
+                if not exist and not found:
+                    found = True
+
+            else:
+                found = any((tax.account_head == tax_type and tax.rate == tax_rate) for tax in taxes)
+
             if not found:
 
                 parent_doc.append("taxes", {
                     "description" : str(tax_type).split(' - ')[0],
                     "charge_type" : "On Net Total",
                     "account_head" : tax_type,
-                    "rate" : 0
+                    "rate" : tax_rate if cruzar_impuestos else 0
                 })
