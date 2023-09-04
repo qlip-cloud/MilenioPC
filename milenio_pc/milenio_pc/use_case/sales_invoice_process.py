@@ -39,11 +39,18 @@ def sales_invoice_orchestrator(doc):
             return True, f"Cuenta de ingreso no existe - {row.account} - {exc_acco}"
 
         try:
-            doc_item_tax = frappe.get_last_doc("Item Tax Template", filters={"title":row.iva_tax,"company":doc.company})
+            doc_item_tax = frappe.get_last_doc("Item Tax", filters={"parent":doc_item.name, "item_tax_template":['like', f'%{row.iva_tax} %']})
+        except frappe.exceptions.DoesNotExistError as exc_iva_tax:
+            frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
+            frappe.db.rollback()
+            return True, f"Plantilla de impuesto {row.iva_tax} no existe para producto {doc_item.name} - {exc_iva_tax}"
+
+        try:
+            doc_item_tax_temp = frappe.get_last_doc("Item Tax Template", filters={"name":doc_item_tax.item_tax_template,git "company":doc.company})
         except frappe.exceptions.DoesNotExistError as exc_iva:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, f"Plantilla de impuesto no existe - {row.iva_tax} - {exc_iva}"
+            return True, f"Plantilla de impuesto no existe - {doc_item_tax.item_tax_template} - {exc_iva}"
 
         try:
             
@@ -51,7 +58,7 @@ def sales_invoice_orchestrator(doc):
                 "doc":doc,
                 "row":row,
                 "item":doc_item,
-                "item_tax":doc_item_tax,
+                "item_tax":doc_item_tax_temp,
                 "customer":doc_customer,
                 "account":doc_account,
                 "price_list":price_list,
@@ -79,8 +86,6 @@ def sales_invoice_orchestrator(doc):
 
                 frappe.flags.in_import = False
                
-
-
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
