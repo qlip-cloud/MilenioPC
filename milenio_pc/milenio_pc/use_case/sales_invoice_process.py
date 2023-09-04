@@ -46,7 +46,7 @@ def sales_invoice_orchestrator(doc):
             return True, f"Plantilla de impuesto {row.iva_tax} no existe para producto {doc_item.name} - {exc_iva_tax}"
 
         try:
-            doc_item_tax_temp = frappe.get_last_doc("Item Tax Template", filters={"name":doc_item_tax.item_tax_template,git "company":doc.company})
+            doc_item_tax_temp = frappe.get_last_doc("Item Tax Template", filters={"name":doc_item_tax.item_tax_template, "company":doc.company})
         except frappe.exceptions.DoesNotExistError as exc_iva:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
