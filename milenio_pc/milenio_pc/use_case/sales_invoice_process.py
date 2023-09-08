@@ -183,14 +183,14 @@ def cal_taxes_and_totals(doc):
 
 def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
     
+
     add_taxes_from_item_tax_template = frappe.db.get_single_value("Accounts Settings", "add_taxes_from_item_tax_template")
 
     if child_item.item_tax_rate and add_taxes_from_item_tax_template:
 
         tax_map = json.loads(child_item.item_tax_rate)
-
+        
         for tax_type in tax_map:
-
             tax_rate = flt(tax_map[tax_type])
             taxes = parent_doc.taxes or []
             # add new row for tax head only if missing
@@ -208,11 +208,9 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
             if not found:
 
-                charge_type = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, ['charge_type'])
-
                 parent_doc.append("taxes", {
                     "description" : str(tax_type).split(' - ')[0],
-                    "charge_type" : charge_type,
+                    "charge_type" : "On Net Total",
                     "account_head" : tax_type,
                     "rate" : tax_rate if cruzar_impuestos else 0
                 })
