@@ -208,9 +208,9 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
             if not found:
                 
-                try
+                try:
                     charge_type = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, 'charge_type')
-                except:
+                except Exception:
                     return True, f"Sales Taxes and Charges - {parent_doc.taxes_and_charges} - {tax_type} - {tax_rate}"
 
                 parent_doc.append("taxes", {
