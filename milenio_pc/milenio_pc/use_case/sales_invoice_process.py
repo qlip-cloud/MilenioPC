@@ -83,6 +83,7 @@ def sales_invoice_orchestrator(doc):
                 sales_invoice_doc.set_missing_values(True)
                 cal_taxes_and_totals(sales_invoice_doc)
                 sales_invoice_doc.insert()
+                print("despues de insertar")
 
                 frappe.flags.in_import = False
                
@@ -179,7 +180,9 @@ def cal_taxes_and_totals(doc):
                 if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
                     doc.append('taxes', tax)
 
+    print("Antes de calcular")
     doc.calculate_taxes_and_totals()
+    print("Despues de calcular")
 
 def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
     
@@ -208,11 +211,14 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
             if not found:
                 
+                print("antes")
                 charge_type = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, 'charge_type')
+                print(f'{tax_type} - {charge_type}')
 
                 parent_doc.append("taxes", {
                     "description" : str(tax_type).split(' - ')[0],
-                    "charge_type" : "On Net Total",
+                    "charge_type" : charge_type,
                     "account_head" : tax_type,
                     "rate" : tax_rate if cruzar_impuestos else 0
                 })
+                print("despues")
