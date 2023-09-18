@@ -1,6 +1,12 @@
-from datetime import datetime
-from frappe.utils import add_to_date, getdate, now
+import json
 import frappe
+from frappe.utils import flt
+from datetime import datetime
+from frappe.utils import add_to_date, getdate, now, get_time
+from erpnext.stock.get_item_details import get_item_tax_info
+from erpnext.controllers.accounts_controller import get_taxes_and_charges
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_reference_details
+#from erpnext.regional.india.e_invoice.utils import make_einvoice
 
 def sales_invoice_orchestrator(doc):
 
@@ -8,35 +14,43 @@ def sales_invoice_orchestrator(doc):
     doctype_data = None
     data_temp_loaded_len = len(data_temp_loaded) - 1
 
-    for index, row in enumerate(data_temp_loaded):
+    price_list, price_list_currency = frappe.db.get_values("Price List", {"selling": 1}, ['name', 'currency'])[0]
 
+    for index, row in enumerate(data_temp_loaded):
         try:
-            doc_customer = frappe.get_doc("Customer", row.client_nit)
+            doc_customer = frappe.get_last_doc("Customer", filters={"tax_id":row.client_nit})
         except frappe.exceptions.DoesNotExistError as exc_cus:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun cliente no existe."
+            return True, f"Algun cliente no existe - {row.client_nit} - {exc_cus}"
 
         try:
             doc_item = frappe.get_doc("Item", row.item_code)
         except frappe.exceptions.DoesNotExistError as exc_item:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun producto no existe."
+            return True, f"Algun producto no existe - {row.item_code} - {exc_item}"
 
         try:
             doc_account = frappe.get_last_doc("Account", filters={"account_number":row.account, "company":doc.company})
         except frappe.exceptions.DoesNotExistError as exc_acco:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Cuenta de ingreso no existe."
+            return True, f"Cuenta de ingreso no existe - {row.account} - {exc_acco}"
 
         try:
-            doc_item_tax = frappe.get_last_doc("Item Tax Template", filters={"title":row.iva_tax,"company":doc.company})
+            doc_item_tax = frappe.get_last_doc("Item Tax", filters={"parent":doc_item.name, "item_tax_template":['like', f'%{row.iva_tax} %']})
+        except frappe.exceptions.DoesNotExistError as exc_iva_tax:
+            frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
+            frappe.db.rollback()
+            return True, f"Plantilla de impuesto {row.iva_tax} no existe para producto {doc_item.name} - {exc_iva_tax}"
+
+        try:
+            doc_item_tax_temp = frappe.get_last_doc("Item Tax Template", filters={"name":doc_item_tax.item_tax_template, "company":doc.company})
         except frappe.exceptions.DoesNotExistError as exc_iva:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Plantilla de impuesto no existe."
+            return True, f"Plantilla de impuesto no existe - {doc_item_tax.item_tax_template} - {exc_iva}"
 
         try:
             
@@ -44,9 +58,11 @@ def sales_invoice_orchestrator(doc):
                 "doc":doc,
                 "row":row,
                 "item":doc_item,
-                "item_tax":doc_item_tax,
+                "item_tax":doc_item_tax_temp,
                 "customer":doc_customer,
-                "account":doc_account
+                "account":doc_account,
+                "price_list":price_list,
+                "price_list_currency":price_list_currency
             }
 
             if index == 0:
@@ -59,28 +75,34 @@ def sales_invoice_orchestrator(doc):
                 doctype_data["items"].append(new_item_invoice(**kwargs))
 
             if (index < data_temp_loaded_len and data_temp_loaded[index + 1].doc_number != row.doc_number) or index == data_temp_loaded_len:
-                print(doctype_data)
+                
+                frappe.flags.in_import = True
+                
                 sales_invoice_doc = frappe.get_doc(doctype_data)
-                sales_invoice_doc.insert(sales_invoice_doc)         
+                #sales_invoice_doc = make_einvoice(sales_invoice_doc)
+                sales_invoice_doc.set_missing_values(True)
+                cal_taxes_and_totals(sales_invoice_doc)
+                sales_invoice_doc.insert()
 
+                frappe.flags.in_import = False
+               
         except frappe.exceptions.DuplicateEntryError as sa_in_du:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun secuencial de factura se repite."
+            return True, f"Algun secuencial de factura se repite - {row.naming_series}{row.doc_number} - {sa_in_du}"
         except frappe.exceptions.UniqueValidationError as sa_in_uni:
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Algun valor requerido se encuentra vacio."
+            return True, f"Algun valor requerido se encuentra vacio - {row.naming_series}{row.doc_number} - {sa_in_uni}"
         except Exception as sa_in_exc:
-            print(sa_in_exc)
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
-            return True, "Archivo con error."
+            return True, f"Archivo con error - {row.naming_series}{row.doc_number} - {sa_in_exc}"
 
     frappe.db.commit()
     return False, None
 
-def new_invoice(doc, row, item, item_tax, customer, account):
+def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency):
 
     return {
             'doctype': 'Sales Invoice',
@@ -93,15 +115,21 @@ def new_invoice(doc, row, item, item_tax, customer, account):
             'customer_name':customer.customer_name,
             'tax_id':customer.tax_id,
             'posting_date': getdate(row.doc_date),
+            'posting_time': get_time(row.doc_date),
             'due_date':add_to_date(datetime.now(), days=int(row.exp_date), as_string=True),
             'items':[],
-            "status":"Draft"
+            "status":"Draft",
+            "taxes_and_charges": customer.sales_item_tax_template,
+            "taxes":[],
+            'selling_price_list': price_list,
+            'price_list_currency': price_list_currency,
+            'plc_conversion_rate': 1.0,
         }
 
-def new_item_invoice(doc, row, item, item_tax, customer, account):
+def new_item_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency):
 
     qty = (int(row.item_quantity) * -1) if row.doc_type == 'NC' else int(row.item_quantity)
-    
+
     return {
                 "item_code":item.name,
                 "item_name":item.item_name,
@@ -117,7 +145,118 @@ def new_item_invoice(doc, row, item, item_tax, customer, account):
                 "net_rate":row.unit_price,
                 "base_net_rate":row.unit_price,
                 "amount": qty * row.unit_price,
-                "base_amount":qty * row.unit_price,
+                "base_amount": qty * row.unit_price,
                 "net_amount": qty * row.unit_price,
                 "base_net_amount": qty * row.unit_price,
+                "unit_price": row.unit_price
             }
+
+def cal_taxes_and_totals(doc):
+
+    cruzar_impuestos = 0
+
+    try:
+        cruzar_impuestos = frappe.db.get_single_value('Dynamic Taxes Config', "cruzar_impuestos")
+    except Exception as e:
+        pass
+
+    for item in doc.items:
+        item.item_tax_template = item.item_tax_template
+        add_taxes_from_item_tax_template(item, doc, cruzar_impuestos)
+
+    if doc.taxes_and_charges:
+
+        taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
+
+        for tax in taxes:
+            
+            if cruzar_impuestos:
+
+                flag_add_tax = True
+
+                if not any((item_tax.get("account_head") == tax.get("account_head") and item_tax.get("rate") == tax.get("rate")) for item_tax in doc.taxes):
+                    for item in doc.items:
+                       
+                        if frappe.db.exists("Item Tax Template Detail", {"parent":item.item_tax_template, "tax_type":tax.get("account_head"), "tax_rate":tax.get("rate")}):
+                            
+                            if tax.charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
+                                
+                                prev_account_head = taxes[int(tax.row_id) -1].account_head
+                                prev_rate = taxes[int(tax.row_id) -1].rate
+
+                                ex = False
+
+                                for item_temp in doc.items:
+                                    if frappe.db.exists("Item Tax Template Detail", {"parent":item_temp.item_tax_template, "tax_type":prev_account_head, "tax_rate":prev_rate}):
+                                        ex = True
+
+                                if not ex:
+                                    flag_add_tax = False
+                                                        
+                                tax.row_id = doc.taxes[-1:][0].idx
+
+                            if flag_add_tax:
+                                doc.append('taxes', tax)
+            else:
+                if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
+                    doc.append('taxes', tax)
+
+    doc.calculate_taxes_and_totals()
+
+def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
+    
+    add_taxes_from_item_tax_template = frappe.db.get_single_value("Accounts Settings", "add_taxes_from_item_tax_template")
+
+    if child_item.item_tax_rate and add_taxes_from_item_tax_template:
+
+        tax_map = json.loads(child_item.item_tax_rate)
+
+        for tax_type in tax_map:
+
+            tax_rate = flt(tax_map[tax_type])
+            taxes = parent_doc.taxes or []
+            # add new row for tax head only if missing
+            if cruzar_impuestos:
+
+                found = any((tax.account_head == tax_type and tax.rate == tax_rate) for tax in taxes)
+
+                exist = frappe.db.exists("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate})
+
+                if not exist and not found:
+                    found = True
+
+            else:
+                found = any((tax.account_head == tax_type and tax.rate == tax_rate) for tax in taxes)
+
+            if not found:
+                
+                flag_add_tax = True
+
+                charge_type, row_id = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, ['charge_type', 'row_id'])
+
+                tax_detail = {
+                    "description" : str(tax_type).split(' - ')[0],
+                    "charge_type" : charge_type if cruzar_impuestos else "On Net Total",
+                    "account_head" : tax_type,
+                    "rate" : tax_rate if cruzar_impuestos else 0
+                }
+
+                if charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
+
+                    account_head = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":row_id}, 'account_head')
+                    
+                    ex = False
+
+                    for tax_type in tax_map:
+                        if account_head == tax_type:
+                            ex = True
+                    
+                    if not ex:
+                        flag_add_tax = False
+                    
+                    r = parent_doc.taxes[-1:][0].idx if cruzar_impuestos else row_id
+                    tax_detail.update({"row_id": r})
+            
+                if flag_add_tax:
+
+                    parent_doc.append("taxes", tax_detail)
