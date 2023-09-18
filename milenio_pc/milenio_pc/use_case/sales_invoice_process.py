@@ -189,7 +189,7 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
         tax_map = json.loads(child_item.item_tax_rate)
 
-        for tax_type in tax_map:
+        for index, tax_type in enumerate(tax_map):
 
             tax_rate = flt(tax_map[tax_type])
             taxes = parent_doc.taxes or []
@@ -208,12 +208,32 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
             if not found:
                 
+                flag_add_tax = True
+
                 charge_type, row_id = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, ['charge_type', 'row_id'])
 
-                parent_doc.append("taxes", {
+                tax_detail = {
                     "description" : str(tax_type).split(' - ')[0],
-                    "charge_type" : charge_type,
+                    "charge_type" : charge_type if cruzar_impuestos else "On Net Total",
                     "account_head" : tax_type,
-                    "rate" : tax_rate if cruzar_impuestos else 0,
-                    "row_id": row_id
-                })
+                    "rate" : tax_rate if cruzar_impuestos else 0
+                }
+
+                if charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
+
+                    account_head = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":row_id}, 'account_head')
+                    
+                    ex = False
+
+                    for tax_type in tax_map:
+                        if account_head == tax_type:
+                            ex = True
+                    
+                    if not ex:
+                        flag_add_tax = False
+
+                    r = index if cruzar_impuestos else row_id
+                    tax_detail.update({"row_id": r})
+            
+                if flag_add_tax:
+                    parent_doc.append("taxes", tax_detail)
