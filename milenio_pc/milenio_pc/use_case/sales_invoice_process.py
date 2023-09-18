@@ -169,12 +169,34 @@ def cal_taxes_and_totals(doc):
         taxes = get_taxes_and_charges('Sales Taxes and Charges Template', doc.taxes_and_charges)
 
         for tax in taxes:
-
+            
             if cruzar_impuestos:
+
+                flag_add_tax = True
+
                 if not any((item_tax.get("account_head") == tax.get("account_head") and item_tax.get("rate") == tax.get("rate")) for item_tax in doc.taxes):
                     for item in doc.items:
+                       
                         if frappe.db.exists("Item Tax Template Detail", {"parent":item.item_tax_template, "tax_type":tax.get("account_head"), "tax_rate":tax.get("rate")}):
-                            doc.append('taxes', tax)
+                            
+                            if tax.charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
+                                
+                                prev_account_head = taxes[int(tax.row_id) -1].account_head
+                                prev_rate = taxes[int(tax.row_id) -1].rate
+
+                                ex = False
+
+                                for item_temp in doc.items:
+                                    if frappe.db.exists("Item Tax Template Detail", {"parent":item_temp.item_tax_template, "tax_type":prev_account_head, "tax_rate":prev_rate}):
+                                        ex = True
+
+                                if not ex:
+                                    flag_add_tax = False
+                                                        
+                                tax.row_id = doc.taxes[-1:][0].idx
+
+                            if flag_add_tax:
+                                doc.append('taxes', tax)
             else:
                 if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
                     doc.append('taxes', tax)
@@ -189,7 +211,7 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
         tax_map = json.loads(child_item.item_tax_rate)
 
-        for index, tax_type in enumerate(tax_map):
+        for tax_type in tax_map:
 
             tax_rate = flt(tax_map[tax_type])
             taxes = parent_doc.taxes or []
@@ -231,9 +253,10 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
                     
                     if not ex:
                         flag_add_tax = False
-
-                    r = index if cruzar_impuestos else row_id
+                    
+                    r = parent_doc.taxes[-1:][0].idx if cruzar_impuestos else row_id
                     tax_detail.update({"row_id": r})
             
                 if flag_add_tax:
+
                     parent_doc.append("taxes", tax_detail)
