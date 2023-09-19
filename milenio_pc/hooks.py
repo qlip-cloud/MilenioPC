@@ -14,7 +14,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/milenio_pc/css/milenio_pc.css"
-# app_include_js = "/assets/milenio_pc/js/milenio_pc.js"
+app_include_js = ["/assets/milenio_pc/js/controllers/update_item_tax_map_fun.js",]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/milenio_pc/css/milenio_pc.css"
@@ -35,7 +35,9 @@ app_license = "MIT"
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-doctype_js = {"Company" : "public/js/doctype_forms/company.js"}
+doctype_js = {
+	"Company" : "public/js/forms/company.js",
+	"Sales Invoice" : "public/js/forms/salesInvoice.js"}
 
 # Home Pages
 # ----------
@@ -82,9 +84,9 @@ doctype_js = {"Company" : "public/js/doctype_forms/company.js"}
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Sales Invoice": "milenio_pc.milenio_pc.overrides.sales_invoice.CustomSalesInvoice"
+}
 
 # Document Events
 # ---------------
@@ -127,9 +129,9 @@ doctype_js = {"Company" : "public/js/doctype_forms/company.js"}
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "milenio_pc.event.get_events"
-# }
+override_whitelisted_methods = {
+ "erpnext.stock.get_item_details.get_item_tax_info": "milenio_pc.milenio_pc.services.stock.get_item_details.get_item_tax_info"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
