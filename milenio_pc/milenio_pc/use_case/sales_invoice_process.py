@@ -37,7 +37,7 @@ def sales_invoice_orchestrator(doc):
             frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
             frappe.db.rollback()
             return True, f"Cuenta de ingreso no existe - {row.account} - {exc_acco}"
-
+        
         try:
             doc_item_tax = frappe.get_last_doc("Item Tax", filters={"parent":doc_item.name, "item_tax_template":['like', f'%{row.iva_tax} %']})
         except frappe.exceptions.DoesNotExistError as exc_iva_tax:
@@ -53,6 +53,13 @@ def sales_invoice_orchestrator(doc):
             return True, f"Plantilla de impuesto no existe - {doc_item_tax.item_tax_template} - {exc_iva}"
 
         try:
+            doc_sales_person = frappe.get_doc("Sales Person", row.seller_nit)
+        except frappe.exceptions.DoesNotExistError as exc_sales_person:
+            frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
+            frappe.db.rollback()
+            return True, f"Alguna persona de venta no existe - {row.seller_nit} - {exc_sales_person}"
+        
+        try:
             
             kwargs = {
                 "doc":doc,
@@ -62,7 +69,8 @@ def sales_invoice_orchestrator(doc):
                 "customer":doc_customer,
                 "account":doc_account,
                 "price_list":price_list,
-                "price_list_currency":price_list_currency
+                "price_list_currency":price_list_currency,
+                "sales_person":doc_sales_person
             }
 
             if index == 0:
@@ -102,7 +110,7 @@ def sales_invoice_orchestrator(doc):
     frappe.db.commit()
     return False, None
 
-def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency):
+def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency, sales_person):
 
     return {
             'doctype': 'Sales Invoice',
@@ -124,9 +132,13 @@ def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_l
             'selling_price_list': price_list,
             'price_list_currency': price_list_currency,
             'plc_conversion_rate': 1.0,
+            'sales_team':[{
+                'sales_person':sales_person.name,
+                'allocated_percentage':100.00
+            }]
         }
 
-def new_item_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency):
+def new_item_invoice(doc, row, item, item_tax, customer, account, price_list, price_list_currency, sales_person):
 
     qty = (int(row.item_quantity) * -1) if row.doc_type == 'NC' else int(row.item_quantity)
 
