@@ -92,7 +92,7 @@ SET @a:=0;
 LOAD DATA LOCAL INFILE '{file_path}' 
 INTO TABLE tabMilenio_Temporal_Data_File
 FIELDS TERMINATED BY ', ' OPTIONALLY ENCLOSED BY '"'
-LINES TERMINATED BY "\\r\\n"
+LINES TERMINATED BY "\\n\\r\\n"
 (doc_type, doc_number, naming_series, item_num, item_quantity, unit_price, iva_tax, total, account, client_nit, client_name, doc_date, observation, item_code, item_desc, exp_date, doc_status, discount_percent, discount_value, seller_nit)
 SET name = CONCAT('{doc.name}_', @a:=@a+1),
 temporal_lot = '{doc.name}',
