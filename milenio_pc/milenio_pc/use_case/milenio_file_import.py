@@ -91,6 +91,7 @@ def load_data_infile_to_temporal(doc):
 SET @a:=0;
 LOAD DATA LOCAL INFILE '{file_path}' 
 INTO TABLE tabMilenio_Temporal_Data_File
+CHARACTER SET latin1
 FIELDS TERMINATED BY ', ' OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY "\\n\\r\\n"
 (doc_type, doc_number, naming_series, item_num, item_quantity, unit_price, iva_tax, total, account, client_nit, client_name, doc_date, observation, item_code, item_desc, exp_date, doc_status, discount_percent, discount_value, seller_nit)
