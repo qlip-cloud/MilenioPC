@@ -122,7 +122,7 @@ def new_invoice(doc, row, item, item_tax, customer, account, price_list, price_l
             'naming_series':row.naming_series,
             'customer_name':customer.customer_name,
             'tax_id':customer.tax_id,
-            'posting_date': getdate(row.doc_date),
+            'posting_date': getdate(datetime.strptime(row.doc_date.split(" ")[0], "%d/%m/%Y")),
             'posting_time': get_time(row.doc_date),
             'due_date':add_to_date(datetime.now(), days=int(row.exp_date), as_string=True),
             'items':[],
