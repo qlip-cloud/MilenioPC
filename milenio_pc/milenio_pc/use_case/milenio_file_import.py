@@ -31,15 +31,22 @@ def milenio_file_import(doc):
 			error = True
 			message = "Rows not loaded."
 
-		#SE EJECUTA PROCESO PARA VALIDACION Y CARGA DE FACTURAS
-		try:
-			error, message = sales_invoice_orchestrator(doc)
-			if message:
-				message = f"Error creando facturas - {message}"
-		except Exception as soo_exc:
+		clients_not_exists = verify_all_clients(doc)
+
+		if clients_not_exists:
 			error = True
-			message = f"Error creando facturas - {soo_exc}"
-			frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
+			message = "\n".join(clients_not_exists)
+
+		if not error:
+			#SE EJECUTA PROCESO PARA VALIDACION Y CARGA DE FACTURAS
+			try:
+				error, message = sales_invoice_orchestrator(doc)
+				if message:
+					message = f"Error creando facturas - {message}"
+			except Exception as soo_exc:
+				error = True
+				message = f"Error creando facturas - {soo_exc}"
+				frappe.log_error(message=frappe.get_traceback(), title="milenio_file_import")
 
 	except Exception as exc:
 		error = True
@@ -109,3 +116,16 @@ def verify_temporal_load_data(doc):
 
 	count = frappe.db.sql(f"SELECT COUNT(*) AS count FROM `tabMilenio_Temporal_Data_File` WHERE temporal_lot = '{doc.name}'", as_dict=1)[0].count
 	return count
+
+
+def verify_all_clients(doc):
+
+	clients_not_exists = []
+
+	rows = frappe.db.sql(f"SELECT client_nit, client_name FROM `tabMilenio_Temporal_Data_File` WHERE temporal_lot = '{doc.name}'", as_dict=1)
+
+	for row in rows:
+		if not frappe.db.exists("Customer", {"tax_id": row.client_nit}):
+			clients_not_exists.append(f'Cliente {row.client_nit} - {row.client_name} no existe o no ha sido creado.')
+
+	return clients_not_exists
