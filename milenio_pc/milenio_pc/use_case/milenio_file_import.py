@@ -125,7 +125,7 @@ def verify_all_clients(doc):
 	rows = frappe.db.sql(f"SELECT client_nit, client_name FROM `tabMilenio_Temporal_Data_File` WHERE temporal_lot = '{doc.name}'", as_dict=1)
 
 	for row in rows:
-		if not frappe.db.exists("Customer", row.client_nit):
+		if not frappe.db.exists("Customer", {"tax_id": row.client_nit}):
 			clients_not_exists.append(f'Cliente {row.client_nit} - {row.client_name} no existe o no ha sido creado.')
 
 	return clients_not_exists
