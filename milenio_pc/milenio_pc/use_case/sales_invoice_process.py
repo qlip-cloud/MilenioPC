@@ -209,8 +209,6 @@ def cal_taxes_and_totals(doc):
 
                                 if tax.charge_type in ['On Previous Row Amount', 'Previous Row Total']:
 
-                                    print(tax)
-
                                     if cruzar_impuestos:
                                          tax.row_id = doc.taxes[-1:][0].idx
                                     else:
@@ -230,10 +228,6 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
     if child_item.item_tax_rate and add_taxes_from_item_tax_template:
 
         tax_map = json.loads(child_item.item_tax_rate)
-
-        print("henderson")
-        print(tax_map)
-        print(parent_doc.taxes)
 
         for tax_type in tax_map:
 
@@ -274,12 +268,6 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
                         ex = False
 
                         for tax_type in tax_map:
-
-                            print(account_head)
-                            print(rate)
-                            print(tax_type)
-                            print(tax_map[tax_type])
-
                             if account_head == tax_type and flt(rate) == flt(tax_map[tax_type]):
                                 ex = True
                         
@@ -287,10 +275,7 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
                             flag_add_tax = False
                 
                     if flag_add_tax:
-                        print(tax_detail)
                         if row.charge_type in ['On Previous Row Amount', 'Previous Row Total']:
                             tax_detail.update({"row_id": parent_doc.taxes[-1:][0].idx}) if cruzar_impuestos else tax_detail.update({"row_id": row.row_id})
-                        
-                        print(tax_detail)
 
                         parent_doc.append("taxes", tax_detail)
