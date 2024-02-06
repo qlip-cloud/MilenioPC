@@ -204,10 +204,16 @@ def cal_taxes_and_totals(doc):
 
                                 if not ex:
                                     flag_add_tax = False
-                                                        
-                                tax.row_id = doc.taxes[-1:][0].idx
 
                             if flag_add_tax:
+
+                                if tax.charge_type in ['On Previous Row Amount', 'Previous Row Total']:
+
+                                    if cruzar_impuestos:
+                                         tax.row_id = doc.taxes[-1:][0].idx
+                                    else:
+                                        tax.row_id = tax.row_id
+
                                 doc.append('taxes', tax)
             else:
                 if not any(item_tax.get("account_head") == tax.get("account_head") for item_tax in doc.taxes):
@@ -255,7 +261,7 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
                 if charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
 
-                    account_head = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":row_id}, 'account_head')
+                    account_head = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":int(row_id) -1}, 'account_head')
                     
                     ex = False
 
@@ -265,10 +271,9 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
                     
                     if not ex:
                         flag_add_tax = False
-                    
-                    r = parent_doc.taxes[-1:][0].idx if cruzar_impuestos else row_id
-                    tax_detail.update({"row_id": r})
             
                 if flag_add_tax:
+                    if charge_type in ['On Previous Row Amount', 'Previous Row Total']:
+                        tax_detail.update({"row_id": parent_doc.taxes[-1:][0].idx}) if cruzar_impuestos else tax_detail.update({"row_id": row_id})             
 
                     parent_doc.append("taxes", tax_detail)
