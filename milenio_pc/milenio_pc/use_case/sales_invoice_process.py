@@ -261,12 +261,12 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
 
                 if charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
 
-                    account_head = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":int(row_id) -1}, 'account_head')
+                    account_head, rate = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":row_id}, ['account_head', 'rate'])
                     
                     ex = False
 
                     for tax_type in tax_map:
-                        if account_head == tax_type:
+                        if account_head == tax_type and flt(rate) == flt(tax_map[tax_type]):
                             ex = True
                     
                     if not ex:
@@ -274,6 +274,6 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
             
                 if flag_add_tax:
                     if charge_type in ['On Previous Row Amount', 'Previous Row Total']:
-                        tax_detail.update({"row_id": parent_doc.taxes[-1:][0].idx}) if cruzar_impuestos else tax_detail.update({"row_id": row_id})             
+                        tax_detail.update({"row_id": parent_doc.taxes[-1:][0].idx}) if cruzar_impuestos else tax_detail.update({"row_id": row_id})
 
                     parent_doc.append("taxes", tax_detail)
