@@ -209,6 +209,8 @@ def cal_taxes_and_totals(doc):
 
                                 if tax.charge_type in ['On Previous Row Amount', 'Previous Row Total']:
 
+                                    print(tax)
+
                                     if cruzar_impuestos:
                                          tax.row_id = doc.taxes[-1:][0].idx
                                     else:
@@ -228,6 +230,10 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
     if child_item.item_tax_rate and add_taxes_from_item_tax_template:
 
         tax_map = json.loads(child_item.item_tax_rate)
+
+        print("henderson")
+        print(tax_map)
+        print(parent_doc.taxes)
 
         for tax_type in tax_map:
 
@@ -250,30 +256,41 @@ def add_taxes_from_item_tax_template(child_item, parent_doc, cruzar_impuestos):
                 
                 flag_add_tax = True
 
-                charge_type, row_id = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, ['charge_type', 'row_id'])
+                rows = frappe.db.get_values("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "account_head":tax_type, "rate":tax_rate}, ['charge_type', 'row_id'], as_dict=1)
 
-                tax_detail = {
-                    "description" : str(tax_type).split(' - ')[0],
-                    "charge_type" : charge_type if cruzar_impuestos else "On Net Total",
-                    "account_head" : tax_type,
-                    "rate" : tax_rate if cruzar_impuestos else 0
-                }
+                for row in rows:
 
-                if charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
+                    tax_detail = {
+                        "description" : str(tax_type).split(' - ')[0],
+                        "charge_type" : row.charge_type if cruzar_impuestos else "On Net Total",
+                        "account_head" : tax_type,
+                        "rate" : tax_rate if cruzar_impuestos else 0
+                    }
 
-                    account_head, rate = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":row_id}, ['account_head', 'rate'])
-                    
-                    ex = False
+                    if row.charge_type in ['On Previous Row Amount', 'Previous Row Total'] and cruzar_impuestos:
 
-                    for tax_type in tax_map:
-                        if account_head == tax_type and flt(rate) == flt(tax_map[tax_type]):
-                            ex = True
-                    
-                    if not ex:
-                        flag_add_tax = False
-            
-                if flag_add_tax:
-                    if charge_type in ['On Previous Row Amount', 'Previous Row Total']:
-                        tax_detail.update({"row_id": parent_doc.taxes[-1:][0].idx}) if cruzar_impuestos else tax_detail.update({"row_id": row_id})
+                        account_head, rate = frappe.db.get_value("Sales Taxes and Charges", {"parent": parent_doc.taxes_and_charges, "idx":row.row_id}, ['account_head', 'rate'])
+                        
+                        ex = False
 
-                    parent_doc.append("taxes", tax_detail)
+                        for tax_type in tax_map:
+
+                            print(account_head)
+                            print(rate)
+                            print(tax_type)
+                            print(tax_map[tax_type])
+
+                            if account_head == tax_type and flt(rate) == flt(tax_map[tax_type]):
+                                ex = True
+                        
+                        if not ex:
+                            flag_add_tax = False
+                
+                    if flag_add_tax:
+                        print(tax_detail)
+                        if row.charge_type in ['On Previous Row Amount', 'Previous Row Total']:
+                            tax_detail.update({"row_id": parent_doc.taxes[-1:][0].idx}) if cruzar_impuestos else tax_detail.update({"row_id": row.row_id})
+                        
+                        print(tax_detail)
+
+                        parent_doc.append("taxes", tax_detail)
