@@ -62,7 +62,8 @@ doctype_js = {
 # before_install = "milenio_pc.install.before_install"
 # after_install = "milenio_pc.install.after_install"
 
-after_migrate = "milenio_pc.milenio_pc.use_case.account.add_index"
+# Se comenta para trasladarlo al ERP BASE
+# after_migrate = "milenio_pc.milenio_pc.use_case.account.add_index"
 
 # Desk Notifications
 # ------------------
